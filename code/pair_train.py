@@ -20,9 +20,9 @@ import onmt.ModelConstructor
 import onmt.modules
 from onmt.Utils import use_gpu
 import onmt.opts as opts
-from . import txt_utils
-from . import model_utils
-from . import train_utils
+import txt_utils
+import model_utils
+import train_utils
 
 parser = argparse.ArgumentParser(
     description='train.py',
