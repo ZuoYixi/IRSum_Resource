@@ -7,9 +7,9 @@ import glob
 import sys
 
 import torch
-import txt_utils
+from . import txt_utils
 import onmt.io
-import opts
+import onmt.opts as opts
 
 
 def check_existing_pt_files(opt):

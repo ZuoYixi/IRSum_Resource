@@ -19,10 +19,10 @@ import onmt.Models
 import onmt.ModelConstructor
 import onmt.modules
 from onmt.Utils import use_gpu
-import opts
-import txt_utils
-import model_utils
-import train_utils
+import onmt.opts as opts
+from . import txt_utils
+from . import model_utils
+from . import train_utils
 
 parser = argparse.ArgumentParser(
     description='train.py',
@@ -34,9 +34,6 @@ opts.model_opts(parser)
 opts.train_opts(parser)
 group = parser.add_argument_group('Train_Template')
 group.add_argument('-template_weight', type=float, default=1, help="""weight for template loss""")
-
-
-
 
 opt = parser.parse_args()
 

@@ -14,18 +14,21 @@ import onmt.translate
 import onmt
 import onmt.ModelConstructor
 import onmt.modules
-import opts
-import txt_utils
-import model_utils
+import onmt.opts as opts
+from . import txt_utils
+from . import model_utils
 
 import torchtext
 
 def _report_rouge(golden_file,result_file):
     import sys
     sys.path.append('../tools/rouge')
-    from rouge_wrap import RougeWrapper
-    r=RougeWrapper()
-    results=r.evaluate_for_pair_files(golden_file, result_file)
+    # from rouge_wrap import RougeWrapper
+    # r=RougeWrapper()
+    # results = r.evaluate_for_pair_files(opt.tgt, opt.output)
+    from pyrouge import Rouge155
+    r = Rouge155()
+    results = r.convert_summaries_to_rouge_format(golden_file, result_file)
     for k,v in results.items():
         if not '_F' in k: continue
         print(k,v)
