@@ -20,8 +20,8 @@ import onmt
 import onmt.ModelConstructor
 import onmt.modules
 import onmt.opts as opts
-from . import txt_utils
-from . import model_utils
+import txt_utils
+import model_utils
 
 parser = argparse.ArgumentParser(
     description='translate.py',

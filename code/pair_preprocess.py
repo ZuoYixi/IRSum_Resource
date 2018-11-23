@@ -7,7 +7,7 @@ import glob
 import sys
 
 import torch
-from . import txt_utils
+import txt_utils
 import onmt.io
 import onmt.opts as opts
 
