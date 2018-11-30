@@ -32,7 +32,7 @@ class ONMTDatasetBase(torchtext.data.Dataset):
 
     def __reduce_ex__(self, proto):
         "This is a hack. Something is broken with torch pickle."
-        return super(ONMTDatasetBase, self).__reduce_ex__(self)
+        return super(ONMTDatasetBase, self).__reduce_ex__(self,proto)
 
     def load_fields(self, vocab_dict):
         """ Load fields from vocab.pt, and set the `fields` attribute.
