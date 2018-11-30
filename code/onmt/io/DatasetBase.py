@@ -32,7 +32,7 @@ class ONMTDatasetBase(torchtext.data.Dataset):
 
     def __reduce_ex__(self, proto):
         "This is a hack. Something is broken with torch pickle."
-        return super(ONMTDatasetBase, self).__reduce_ex__(self,proto)
+        return super(ONMTDatasetBase, self).__reduce_ex__()
 
     def load_fields(self, vocab_dict):
         """ Load fields from vocab.pt, and set the `fields` attribute.
@@ -51,14 +51,14 @@ class ONMTDatasetBase(torchtext.data.Dataset):
         """
         Args:
             tokens: A list of tokens, where each token consists of a word,
-                optionally followed by u"ï¿?-delimited features.
+                optionally followed by u"ï¿¨"-delimited features.
         Returns:
             A sequence of words, a sequence of features, and num of features.
         """
         if not tokens:
             return [], [], -1
 
-        split_tokens = [token.split(u"ï¿?) for token in tokens]
+        split_tokens = [token.split(u"ï¿¨") for token in tokens]
         split_tokens = [token for token in split_tokens if token[0]]
         token_size = len(split_tokens[0])
 
