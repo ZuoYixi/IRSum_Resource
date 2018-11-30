@@ -115,8 +115,7 @@ class DatasetLazyIter(object):
         device: the GPU device.
         is_train (bool): train or valid?
     """
-    def __init__(self, datasets, fields, batch_size, batch_size_fn,
-                 device, is_train):
+    def __init__(self, datasets, fields, batch_size, batch_size_fn,device, is_train):
         self.datasets = datasets
         self.fields = fields
         self.batch_size = batch_size
