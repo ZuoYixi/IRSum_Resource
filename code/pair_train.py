@@ -19,7 +19,7 @@ import onmt.Models
 import onmt.ModelConstructor
 import onmt.modules
 from onmt.Utils import use_gpu
-import onmt.opts as opts
+import opts
 import txt_utils
 import model_utils
 import train_utils
@@ -34,6 +34,9 @@ opts.model_opts(parser)
 opts.train_opts(parser)
 group = parser.add_argument_group('Train_Template')
 group.add_argument('-template_weight', type=float, default=1, help="""weight for template loss""")
+
+
+
 
 opt = parser.parse_args()
 
@@ -56,14 +59,12 @@ if opt.rnn_type == "SRU" and not opt.gpuid:
 if torch.cuda.is_available() and not opt.gpuid:
     print("WARNING: You have a CUDA device, should run with -gpuid 0")
 
-if opt.gpuid:
-    cuda.set_device(opt.gpuid[0])
-    if opt.seed > 0:
-        torch.cuda.manual_seed(opt.seed)
+if opt.seed > 0:
+    torch.cuda.manual_seed(opt.seed)
 
-if len(opt.gpuid) > 1:
-    sys.stderr.write("Sorry, multigpu isn't supported yet, coming soon!\n")
-    sys.exit(1)
+#if len(opt.gpuid) > 1:
+#    sys.stderr.write("Sorry, multigpu isn't supported yet, coming soon!\n")
+#    sys.exit(1)
 
 
 # Set up the Crayon logging server.
@@ -72,7 +73,6 @@ if opt.exp_host != "":
     cc = CrayonClient(hostname=opt.exp_host)
 
     experiments = cc.get_experiment_names()
-    print(experiments)
     if opt.exp in experiments:
         cc.remove_experiment(opt.exp)
     experiment = cc.create_experiment(opt.exp)
@@ -115,7 +115,8 @@ class DatasetLazyIter(object):
         device: the GPU device.
         is_train (bool): train or valid?
     """
-    def __init__(self, datasets, fields, batch_size, batch_size_fn,device, is_train):
+    def __init__(self, datasets, fields, batch_size, batch_size_fn,
+                 device, is_train):
         self.datasets = datasets
         self.fields = fields
         self.batch_size = batch_size
@@ -176,7 +177,8 @@ def make_dataset_iter(datasets, fields, opt, is_train=True):
         def batch_size_fn(new, count, sofar):
             return sofar + max(len(new.tgt), len(new.src)) + 1
 
-    device = opt.gpuid[0] if opt.gpuid else -1
+    #device = opt.gpuid[0] if opt.gpuid else -1
+    device = torch.device('cuda') if opt.gpuid else torch.device("cpu")
 
     return DatasetLazyIter(datasets, fields, batch_size, batch_size_fn,
                            device, is_train)
@@ -197,7 +199,7 @@ def make_loss_compute(model, tgt_vocab, opt):
             label_smoothing=opt.label_smoothing)
 
     if use_gpu(opt):
-        compute.cuda()
+        compute = compute.cuda()
 
     return compute
 
@@ -219,7 +221,6 @@ def train_model(model, fields, optim, data_type, model_opt):
                                     opt.normalization, opt.accum_count)
 
     for epoch in range(opt.start_epoch, opt.epochs + 1):
-        print()
 
         # 1. Train for one epoch on the training set.
         train_datasets = lazily_load_dataset("train")

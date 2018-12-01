@@ -427,7 +427,7 @@ class AdvancedTextDataset(ONMTDatasetBase):
             return alignment
 
         fields["src_map"] = torchtext.data.Field(
-            use_vocab=False, dtype=torch.FloatTensor,
+            use_vocab=False, dtype=torch.float,
             postprocessing=make_src, sequential=False)
 
         def make_tgt(data, vocab, is_train):
@@ -438,19 +438,19 @@ class AdvancedTextDataset(ONMTDatasetBase):
             return alignment
 
         fields["alignment"] = torchtext.data.Field(
-            use_vocab=False, dtype=torch.LongTensor,
+            use_vocab=False, dtype=torch.long,
             postprocessing=make_tgt, sequential=False)
 
         fields["indices"] = torchtext.data.Field(
-            use_vocab=False, dtype=torch.LongTensor,
+            use_vocab=False, dtype=torch.long,
             sequential=False)
         
         fields["spliter_pos"] = torchtext.data.Field(
-            use_vocab=False, dtype=torch.LongTensor,
+            use_vocab=False, dtype=torch.long,
             sequential=False)        
 
         fields["rouge_score"] = torchtext.data.Field(
-            use_vocab=False, dtype=torch.FloatTensor,
+            use_vocab=False, dtype=torch.float,
             sequential=False)  
         return fields
 

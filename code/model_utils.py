@@ -93,11 +93,11 @@ class NMTTemplateModel(nn.Module):
         for index,position in enumerate(positions):
             current_end=context[position-1][0]
             #print('end 1:',current_end.size())
-            current_end=current_end[index,:rnn_size]
+            current_end=current_end[:rnn_size]
             #print('end 2:',current_end.size())
             
             current_start=context[position+1][0]
-            current_start=current_start[index,rnn_size:]
+            current_start=current_start[rnn_size:]
             h_s1.append(current_end)
             h_t0.append(current_start)
         h_s1=torch.stack(h_s1, dim=0)

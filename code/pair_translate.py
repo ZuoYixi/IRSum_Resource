@@ -3,9 +3,7 @@
 from __future__ import division, unicode_literals
 import sys
 sys.path.append('../tools/rouge')
-#from rouge_wrap import RougeWrapper
-from pyrouge import Rouge155
-
+from rouge_wrap import RougeWrapper
 import os
 import argparse
 import math
@@ -19,7 +17,7 @@ import onmt.translate
 import onmt
 import onmt.ModelConstructor
 import onmt.modules
-import onmt.opts as opts
+import opts
 import txt_utils
 import model_utils
 
@@ -50,10 +48,8 @@ def _report_bleu():
 
 
 def _report_rouge():
-    # r=RougeWrapper()
-    # results=r.evaluate_for_pair_files(opt.tgt, opt.output)
-    r = Rouge155()
-    results = r.convert_summaries_to_rouge_format(opt.tgt, opt.output)
+    r=RougeWrapper()
+    results=r.evaluate_for_pair_files(opt.tgt, opt.output)
     for k,v in results.items():
         if not '_F' in k: continue
         print(k,v)

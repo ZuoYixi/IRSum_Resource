@@ -42,7 +42,7 @@ class PairStatistics(object):
         return 100 * (self.n_correct / self.n_words)
 
     def ppl(self):
-        return math.exp(min(self.loss / self.n_words, 100))
+        return math.exp(min(self.loss / self.n_words.float(), 100))
 
     def rouge_loss(self):
         return self.rouge_loss_sum/self.batch_count
@@ -240,14 +240,11 @@ class PairTrainer(object):
         self.model.zero_grad()
         true_score=batch.rouge_score
         src = onmt.io.make_features(batch, 'src', 'text')
-        print('src:',src.size())
-        print('src1:',batch.src[1].size())
-        print('spliter:',batch.spliter_pos.size())
         predict_score=self.model.predict_rouge(src,batch.src[1],batch.spliter_pos)
         loss=self.rouge_loss(predict_score,true_score)
         rouge_loss=loss.data[0]
         loss*=self.rouge_weight
-        loss.backward()
+        loss.backward(retain_graph = True)
         self.optim.step()
         return rouge_loss
     
