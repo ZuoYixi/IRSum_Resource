@@ -67,7 +67,6 @@ class ONMTDatasetBase(torchtext.data.Dataset):
         words_and_features = list(zip(*split_tokens))
         words = words_and_features[0]
         features = words_and_features[1:]
-
         return words, features, token_size - 1
 
     # Below are helper functions for intra-class use only.
@@ -110,7 +109,11 @@ class ONMTDatasetBase(torchtext.data.Dataset):
         ex = torchtext.data.Example()
         for (name, field), val in zip(fields, data):
             if field is not None:
+                #print("------------------------------------")
+                #print(name, field.preprocess(val))
                 setattr(ex, name, field.preprocess(val))
             else:
+                #print("------------------------------------")
+                #print(name, val)
                 setattr(ex, name, val)
         return ex

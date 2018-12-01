@@ -10,8 +10,7 @@ import torch
 import torchtext
 
 from onmt.Utils import aeq
-from onmt.io.DatasetBase import (ONMTDatasetBase, UNK_WORD,
-                                 PAD_WORD, BOS_WORD, EOS_WORD)
+from onmt.io.DatasetBase import ONMTDatasetBase, PAD_WORD, BOS_WORD, EOS_WORD
 
 
 class TextDataset(ONMTDatasetBase):
@@ -67,21 +66,13 @@ class TextDataset(ONMTDatasetBase):
         out_fields = [(k, fields[k]) if k in fields else (k, None)
                       for k in keys]
         example_values = ([ex[k] for k in keys] for ex in examples_iter)
-
+        out_examples = (self._construct_example_fromlist(
+                            ex_values, out_fields)
+                        for ex_values in example_values)
         # If out_examples is a generator, we need to save the filter_pred
         # function in serialization too, which would cause a problem when
         # `torch.save()`. Thus we materialize it as a list.
-        src_size = 0
-
-        out_examples = []
-        for ex_values in example_values:
-            example = self._construct_example_fromlist(
-                ex_values, out_fields)
-            src_size += len(example.src)
-            out_examples.append(example)
-
-        print("average src size", src_size / len(out_examples),
-              len(out_examples))
+        out_examples = list(out_examples)
 
         def filter_pred(example):
             return 0 < len(example.src) <= src_seq_length \
@@ -95,10 +86,6 @@ class TextDataset(ONMTDatasetBase):
 
     def sort_key(self, ex):
         """ Sort using length of source sentences. """
-        # Default to a balanced sort, prioritizing tgt len match.
-        # TODO: make this configurable.
-        if hasattr(ex, "tgt"):
-            return len(ex.src), len(ex.tgt)
         return len(ex.src)
 
     @staticmethod
@@ -169,7 +156,14 @@ class TextDataset(ONMTDatasetBase):
         Yields:
             (word, features, nfeat) triples for each line.
         """
-        with codecs.open(path, "r", "utf-8") as corpus_file:
+        def _iter(data):
+            if type(data) == io.StringIO:
+                return data
+            else:
+                return codecs.open(data, "r", "utf-8")
+
+        # with codecs.open(path, "r", "utf-8") as corpus_file:
+        with _iter(path) as corpus_file:
             for i, line in enumerate(corpus_file):
                 line = line.strip().split()
                 if truncate:
@@ -272,8 +266,7 @@ class TextDataset(ONMTDatasetBase):
     def _dynamic_dict(self, examples_iter):
         for example in examples_iter:
             src = example["src"]
-            src_vocab = torchtext.vocab.Vocab(Counter(src),
-                                              specials=[UNK_WORD, PAD_WORD])
+            src_vocab = torchtext.vocab.Vocab(Counter(src))
             self.src_vocabs.append(src_vocab)
             # Mapping source tokens to indices in the dynamic dict.
             src_map = torch.LongTensor([src_vocab.stoi[w] for w in src])
@@ -282,7 +275,7 @@ class TextDataset(ONMTDatasetBase):
             if "tgt" in example:
                 tgt = example["tgt"]
                 mask = torch.LongTensor(
-                    [0] + [src_vocab.stoi[w] for w in tgt] + [0])
+                        [0] + [src_vocab.stoi[w] for w in tgt] + [0])
                 example["alignment"] = mask
             yield example
 
