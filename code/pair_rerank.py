@@ -22,24 +22,32 @@ import torchtext
 
 def _report_rouge(golden_file,result_file):
     import sys
-    sys.path.append('../tools/rouge')
-    from rouge_wrap import RougeWrapper
-    r=RougeWrapper()
-    results=r.evaluate_for_pair_files(golden_file, result_file)
-    for k,v in results.items():
-        if not '_F' in k: continue
+    sys.path.append('../Lib/site-packages/rouge')
+    #from rouge_wrap import RougeWrapper
+    #r=RougeWrapper()
+    #results = r.evaluate_for_pair_files(golden_file, result_file)
+    from rouge import Rouge
+    r = Rouge()
+    results = r.get_scores(golden_file, result_file)
+    dic_res = results[0]
+    for k,v in dic_res.items():
+        if 'f' not in v:
+            continue
         print(k,v)
 
 def select_templates(src_file,tmp_file,score_file,output_file,tgt_file):
     current_src=''
     opt_template_scores=None
-    with open(src_file,encoding='utf-8') as f_src,open(tmp_file,encoding='utf-8') as f_tmp, \
-        open(score_file,encoding='utf-8') as f_score,open(output_file,'w',encoding='utf-8') as f_out:
+    with open(src_file,encoding='utf-8') as f_src,\
+            open(tmp_file,encoding='utf-8') as f_tmp, \
+            open(score_file,encoding='utf-8') as f_score,\
+            open(output_file,'w',encoding='utf-8') as f_out:
         for line_src,line_tmp,line_score in zip(f_src,f_tmp,f_score):
             line_src=line_src.strip()
-            if len(line_src)==0: continue
+            if len(line_src)==0:
+                continue
             line_tmp=line_tmp.strip()
-            score=float(line_score.strip())
+            score=float()
             if line_src!=current_src:
                 if opt_template_scores:
                     print(opt_template_scores[0],file=f_out)
@@ -75,7 +83,7 @@ def main():
         model_utils.load_test_model(opt, dummy_opt.__dict__)
 
     fields["spliter_pos"] = torchtext.data.Field(
-            use_vocab=False, tensor_type=torch.LongTensor,
+            use_vocab=False, dtype=torch.long,
             sequential=False) 
 
     # Unfold templates
@@ -104,15 +112,19 @@ def main():
         #scores.extend(ordered_score)
         #offset+=index.size(0)
         for index,score in zip(batch.indices.data,predict_score.data):
-            score_dict[index]=score
+            score_dict[int(index)]=float(score)
         count+=1
         if count% 100==0:
             print('score {} batches'.format(count))
         #if count>10: break
         
     # File to write sentences to.
-    score_file=opt.output+'.score'
+    score_file = opt.output + '.score'
+    print(type(score_file))
+    print('score_file is ' + score_file)
+    print(opt.tgt)
     out_file = open(score_file, 'w', encoding='utf-8')
+    print(len(score_dict))
     for index in range(len(score_dict)):
         print(score_dict[index], file=out_file)
     out_file.close()
