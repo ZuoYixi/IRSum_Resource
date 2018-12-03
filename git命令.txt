@@ -1,0 +1,7 @@
+git pull
+git add .
+git commit -m ""
+git push
+
+添加不需要提交到仓库的文件时，修改.gitignore并执行以下命令
+git config --global core.excludesfile .gitignore
