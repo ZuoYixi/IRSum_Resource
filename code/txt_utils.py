@@ -59,7 +59,7 @@ class ShardedPairIterator(object):
                 self.line_index+=1
                 example_dict=self._example_dict_iter(line_s, line_t, template)
                 batch.append(example_dict)              
-                if len(batch)>=self.shard_size:
+                if len(batch) >= self.shard_size != 0:
                     yield batch
                     batch=[]
         if len(batch)>0:
