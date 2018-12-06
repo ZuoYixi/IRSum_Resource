@@ -20,17 +20,25 @@ import model_utils
 
 import torchtext
 
-def _report_rouge(golden_file,result_file):
-    import sys
-    sys.path.append('../Lib/site-packages/rouge')
+def _report_rouge(result_file,golden_file):
+    "1"
+    #import sys
+    #sys.path.append('../Lib/site-packages/rouge')
     #from rouge_wrap import RougeWrapper
     #r=RougeWrapper()
     #results = r.evaluate_for_pair_files(golden_file, result_file)
+    "2"
     from rouge import Rouge
-    r = Rouge()
-    results = r.get_scores(golden_file, result_file)
-    dic_res = results[0]
-    for k,v in dic_res.items():
+    #with open("pred.txt", "r") as f1, open("data/task1_ref0.txt", "r") as f2:
+    #    rouge = Rouge()
+    #    for l1, l2 in zip(f1, f2):
+    #        scores = rouge.get_scores(l1, l2, avg=True)
+    #print(scores)
+    "3"
+    from rouge import FilesRouge
+    r = FilesRouge(result_file,golden_file)
+    results = r.get_scores(avg=True)
+    for k,v in results.items():
         if 'f' not in v:
             continue
         print(k,v)
@@ -57,7 +65,7 @@ def select_templates(src_file,tmp_file,score_file,output_file,tgt_file):
                 opt_template_scores=[line_tmp,score]
         if opt_template_scores:
             print(opt_template_scores[0],file=f_out)
-    _report_rouge(tgt_file,output_file)
+    _report_rouge(output_file,tgt_file)
     return
 
 def main():
@@ -120,9 +128,8 @@ def main():
         
     # File to write sentences to.
     score_file = opt.output + '.score'
-    print(type(score_file))
     print('score_file is ' + score_file)
-    print(opt.tgt)
+    print('opt.tgt is ' + opt.tgt)
     out_file = open(score_file, 'w', encoding='utf-8')
     print(len(score_dict))
     for index in range(len(score_dict)):

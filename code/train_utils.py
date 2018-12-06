@@ -9,7 +9,6 @@ import onmt.io
 import onmt.modules
 
 
-
 class PairStatistics(object):
     """
     Accumulator for loss statistics.
@@ -32,12 +31,12 @@ class PairStatistics(object):
         self.loss += stat.loss
         self.n_words += stat.n_words
         self.n_correct += stat.n_correct
-    
+
     def add_rouge_loss(self,loss):
         self.rouge_loss_sum+=loss
         self.batch_count+=1
         return
-    
+
     def accuracy(self):
         return 100 * (self.n_correct / self.n_words)
 
@@ -113,7 +112,7 @@ class PairTrainer(object):
         self.accum_count = accum_count
         self.padding_idx = self.train_loss.padding_idx
         self.normalization = normalization
-        assert(accum_count > 0)
+        assert(accum_count > 0)  # if accum_count <= 0 :raise AssertionError()
         if accum_count > 1:
             assert(self.trunc_size == 0), \
                 """To enable accumulated gradients,
@@ -143,14 +142,14 @@ class PairTrainer(object):
             if len(train_iter) % self.accum_count > 0:
                 add_on += 1
             num_batches = len(train_iter) / self.accum_count + add_on
+
         except NotImplementedError:
             # Dynamic batching
             num_batches = -1
 
-        def gradient_accumulation(truebatch_, total_stats_,
-                                  report_stats_, nt_):
+        def gradient_accumulation(truebatch_, total_stats_,report_stats_, nt_):
             if self.accum_count > 1:
-                self.model.zero_grad()
+                self.model.zero_grad()  # Zero the gradients
 
             for batch in truebatch_:
                 target_size = batch.tgt.size(0)
@@ -176,7 +175,7 @@ class PairTrainer(object):
 
                     # 2. F-prop all but generator.
                     if self.accum_count == 1:
-                        self.model.zero_grad()
+                        self.model.zero_grad()  # Zero the gradients
                     outputs, attns, dec_state = \
                         self.model(src, tgt, src_lengths, dec_state)
                     # 3. Compute loss in shards for memory efficiency.
@@ -196,8 +195,7 @@ class PairTrainer(object):
 
             if self.accum_count > 1:
                 self.optim.step()
-            
-        
+
         for i, batch_ in enumerate(train_iter):
             rouge_loss=self.update_for_rouge(batch_)
             total_stats.add_rouge_loss(rouge_loss)
@@ -234,6 +232,7 @@ class PairTrainer(object):
                     truebatch, total_stats,
                     report_stats, normalization)
             truebatch = []
+
         return total_stats
 
     def update_for_rouge(self,batch):
@@ -247,7 +246,7 @@ class PairTrainer(object):
         loss.backward(retain_graph = True)
         self.optim.step()
         return rouge_loss
-    
+
     def validate(self, valid_iter):
         """ Validate model.
             valid_iter: validate data iterator
@@ -277,7 +276,7 @@ class PairTrainer(object):
             # Compute loss.
             batch_stats = self.valid_loss.monolithic_compute_loss(
                     batch, outputs, attns)
-            
+
             predict_score=self.model.predict_rouge(src,src_lengths,batch.spliter_pos)
             loss=self.rouge_loss(predict_score,batch.rouge_score)
             rouge_loss=loss.data[0]
